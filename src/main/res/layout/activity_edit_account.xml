@@ -21,7 +21,7 @@
             <RelativeLayout
                 android:id="@+id/editor"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="402dp"
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
                 android:layout_marginLeft="@dimen/activity_horizontal_margin"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
@@ -40,8 +40,11 @@
                 <LinearLayout
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_toRightOf="@+id/avater"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:layout_below="@+id/avater"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginTop="30dp">
                     <TextView
                         android:id="@+id/account_jid_label"
                         android:layout_width="wrap_content"
@@ -54,7 +57,6 @@
                         android:id="@+id/account_jid"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/account_settings_example_jabber_id"
                         android:inputType="textEmailAddress"
                         android:textColor="?attr/color_text_primary"
                         android:textColorHint="?attr/color_text_secondary"
@@ -72,7 +74,6 @@
                         android:id="@+id/account_password"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/password"
                         android:inputType="textPassword"
                         android:textColor="?attr/color_text_primary"
                         android:textColorHint="?attr/color_text_secondary"
