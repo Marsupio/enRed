@@ -45,7 +45,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
-                android:text="@string/create_account"
+                android:text=""
                 android:textColor="@color/accent"/>
             <Button
                 android:id="@+id/use_own_provider"
