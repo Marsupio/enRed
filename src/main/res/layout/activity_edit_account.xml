@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="?attr/color_background_secondary">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/color_background_secondary">
 
     <ScrollView
         android:layout_width="fill_parent"
@@ -21,13 +21,14 @@
             <RelativeLayout
                 android:id="@+id/editor"
                 android:layout_width="fill_parent"
-                android:layout_height="402dp"
+                android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
                 android:layout_marginLeft="@dimen/activity_horizontal_margin"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="@dimen/activity_vertical_margin"
                 android:background="?attr/infocard_border"
                 android:orientation="vertical"
+                android:layout_weight="2"
                 android:padding="@dimen/infocard_padding">
                 <com.makeramen.roundedimageview.RoundedImageView
                     android:id="@+id/avater"
@@ -40,11 +41,40 @@
                 <LinearLayout
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_below="@+id/avater"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true"
-                    android:layout_marginTop="30dp">
+                    android:layout_toRightOf="@+id/avater"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/account_location_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/account_location"
+                        android:textColor="?attr/color_text_primary"
+                        android:textSize="?attr/TextSizeBody"/>
+
+                    <Spinner
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/select_location"
+                        android:layout_gravity="left"
+                        />
+
+
+                    <TextView
+                        android:id="@+id/account_server_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/account_servers"
+                        android:textColor="?attr/color_text_primary"
+                        android:textSize="?attr/TextSizeBody"/>
+
+                    <Spinner
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/select_server"
+                        android:layout_gravity="left"
+                        />
+
                     <TextView
                         android:id="@+id/account_jid_label"
                         android:layout_width="wrap_content"
@@ -57,10 +87,12 @@
                         android:id="@+id/account_jid"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="textEmailAddress"
+                        android:hint="@string/account_settings_example_jabber_id"
                         android:textColor="?attr/color_text_primary"
                         android:textColorHint="?attr/color_text_secondary"
-                        android:textSize="?attr/TextSizeBody"/>
+                        android:textSize="?attr/TextSizeBody"
+                        android:layout_centerVertical="true"
+                        />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -74,6 +106,7 @@
                         android:id="@+id/account_password"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:hint="@string/password"
                         android:inputType="textPassword"
                         android:textColor="?attr/color_text_primary"
                         android:textColorHint="?attr/color_text_secondary"

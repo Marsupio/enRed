@@ -9,16 +9,20 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.security.KeyChain;
 import android.security.KeyChainAliasCallback;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.JsonReader;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -29,16 +33,27 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.malagacomun.enred.Config;
 import org.malagacomun.enred.R;
 import org.malagacomun.enred.crypto.axolotl.AxolotlService;
@@ -99,6 +114,13 @@ public class EditAccountActivity extends XmppActivity implements OnAccountUpdate
 	private EditText mPort;
 	private AlertDialog mCaptchaDialog = null;
 
+	//declaro las variables que contendrán los elementos spinner de la vista
+	private Spinner mSelectServer;
+	private Spinner mSelectLocation;
+	//Declaro el Mapa que contendrá "Nombre del nodo" => "Valor del nodo" || "<Malaga-centro>" => "comun.hopto.org"
+	private Map<String,String> nodesDomain;
+	private String username;
+
 	private Jid jidToEdit;
 	private boolean mInitMode = false;
 	private boolean mUsernameMode = Config.DOMAIN_LOCK != null;
@@ -114,6 +136,11 @@ public class EditAccountActivity extends XmppActivity implements OnAccountUpdate
 		public void onClick(final View v) {
 			final String password = mPassword.getText().toString();
 			final String passwordConfirm = mPasswordConfirm.getText().toString();
+			//Genero el nombre completo de usuario con el dominio, recogiendo el valor del spinner seleccionado -
+			// y lo concateno con el nombre de usuario introducido para usarlo en el resto de la función, -
+			// donde antes se recogia el valor completo del nombre de usuario ahora se recoge el nombre de usuario y posteriormente se concatena con el dominio.
+			username = mAccountJid.getText().toString();
+			String completeUsername = mAccountJid.getText().toString().concat("@").concat(nodesDomain.get(mSelectServer.getSelectedItem().toString()));
 
 			if (!mInitMode && passwordChangedInMagicCreateMode()) {
 				gotoChangePassword(password);
@@ -128,7 +155,7 @@ public class EditAccountActivity extends XmppActivity implements OnAccountUpdate
 				return;
 			}
 			final boolean registerNewAccount = mRegisterNew.isChecked() && !Config.DISALLOW_REGISTRATION_IN_UI;
-			if (mUsernameMode && mAccountJid.getText().toString().contains("@")) {
+			if (mUsernameMode && completeUsername.contains("@")) {
 				mAccountJid.setError(getString(R.string.invalid_username));
 				mAccountJid.requestFocus();
 				return;
@@ -136,9 +163,9 @@ public class EditAccountActivity extends XmppActivity implements OnAccountUpdate
 			final Jid jid;
 			try {
 				if (mUsernameMode) {
-					jid = Jid.fromParts(mAccountJid.getText().toString(), getUserModeDomain(), null);
+					jid = Jid.fromParts(completeUsername, getUserModeDomain(), null);
 				} else {
-					jid = Jid.fromString(mAccountJid.getText().toString());
+					jid = Jid.fromString(completeUsername);
 				}
 			} catch (final InvalidJidException e) {
 				if (mUsernameMode) {
@@ -505,6 +532,14 @@ public class EditAccountActivity extends XmppActivity implements OnAccountUpdate
 		this.mSaveButton.setOnClickListener(this.mSaveButtonClickListener);
 		this.mCancelButton.setOnClickListener(this.mCancelButtonClickListener);
 		this.mMoreTable = (TableLayout) findViewById(R.id.server_info_more);
+
+		//recojo los spinner de la vista
+		this.mSelectServer = (Spinner)findViewById(R.id.select_server);
+		this.mSelectLocation = (Spinner)findViewById(R.id.select_location);
+
+		new GetServers(this,mSelectServer,mSelectLocation).execute();
+
+
 		final OnCheckedChangeListener OnCheckedShowConfirmPassword = new OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(final CompoundButton buttonView,
@@ -704,12 +739,13 @@ public class EditAccountActivity extends XmppActivity implements OnAccountUpdate
 
 	private void updateAccountInformation(boolean init) {
 		if (init) {
-			this.mAccountJid.getEditableText().clear();
+
+			/*this.mAccountJid.getEditableText().clear();
 			if (mUsernameMode) {
 				this.mAccountJid.getEditableText().append(this.mAccount.getJid().getLocalpart());
 			} else {
 				this.mAccountJid.getEditableText().append(this.mAccount.getJid().toBareJid().toString());
-			}
+			}*/
 			this.mPassword.setText(this.mAccount.getPassword());
 			this.mHostname.setText("");
 			this.mHostname.getEditableText().append(this.mAccount.getHostname());
@@ -1059,4 +1095,122 @@ public class EditAccountActivity extends XmppActivity implements OnAccountUpdate
 			}
 		});
 	}
+
+
+	private static String convertInputStreamToString(InputStream inputStream) throws IOException {
+		BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
+		String line = "";
+		String result = "";
+		while((line = bufferedReader.readLine()) != null)
+			result += line;
+
+		inputStream.close();
+		return result;
+
+	}
+
+
+	//Declaro la clase que contendrá la peticion asíncrona al json (Debe extender a AsyncTask)
+	class GetServers extends AsyncTask<String, Void, String> {
+
+		private Exception exception;
+
+		//Variables de la clase principal que se le enviará a la instancia de la Clase GetServers (Llamada asincrona) para realizar cambios en ellas.
+		EditAccountActivity editAccountActivity;
+		Spinner mSelectServer;
+		Spinner mSelectLocation;
+
+		public GetServers(EditAccountActivity editAccountActivity, Spinner mSelectServer, Spinner mSelectLocation){
+			//Recogemos las variables de la clase principal que se van a modificar en la llamada asincrona
+			this.editAccountActivity = editAccountActivity;
+			this.mSelectServer = mSelectServer;
+			this.mSelectLocation = mSelectLocation;
+		}
+
+		protected String doInBackground(String... urls) {
+			InputStream nodeStream = null;
+			String jsonString = "";
+			JsonReader reader = null;
+			try {
+				//Indicamos la dirección de la cual vamos a recoger el json y hacemos la conexion (openStream)
+				nodeStream = new URL("https://89842561ee79abd5045583055715cb09be364348.googledrive.com/host/0B-EBKx5sa2S6S0Rlb2pSdVlDUE0/EnRed-servidores.txt").openStream();
+				//Convertimos el InputStream que recogemos en la llamada y lo transformamos a String
+				jsonString = convertInputStreamToString(nodeStream);
+			} catch (Exception e) {
+				this.exception = e;
+			}
+			return jsonString;
+		}
+
+		protected void onPostExecute(String jsonString) { //Una vez terminada la llamada y recogidos los datos, se ejecuta esta función automáticamente
+
+			//Arraylist con las areas geograficas
+			ArrayList<String> items;
+			//Arraylist que contendrá ["Nombre del area" => {"Nombre del nodo 1", "Nombre del nodo 2", ..., "Nombre del nodo N"}]
+			final Map<String,ArrayList<String>> locationNodes = new HashMap<>();
+			nodesDomain = new HashMap<>();
+			try {
+				//Transformamos el String recibido en un objeto de tipo JSONObject
+				JSONObject jsonObject = new JSONObject(jsonString);
+				//Seleccionamos el contenido del índice del json llamado "lista_nodos"
+				JSONArray jsonArray = jsonObject.getJSONArray("lista_nodos");
+				items = new ArrayList<>();
+				for(int i = 0; i<jsonArray.length(); i++){
+
+					JSONObject nodoActual = (JSONObject)jsonArray.get(i);
+					//Recogemos los valores del indice area del JSON
+					String formattedStringArea = nodoActual.getString("area");
+					//Si el array de areas aun no contiene el area actual, la añadimos.
+					if(!items.contains(formattedStringArea)){
+						items.add(formattedStringArea);
+					}
+					//Recogemos los valores de los elementos "nombre" y "dominio" del json
+					String formattedStringName = nodoActual.getString("nombre");
+					String formattedStringNode = nodoActual.getString("dominio");
+
+					//Si aun no existe el índice lo creamos e introducimos el nombre del nodo
+					if((locationNodes.get(formattedStringArea) == null) || locationNodes.get(formattedStringArea).isEmpty()){
+						ArrayList<String>firstList = new ArrayList<>();
+						firstList.add("<".concat(formattedStringName).concat(">"));
+						locationNodes.put(formattedStringArea,firstList);
+					}else{ //Si ya existe el índice, únicamente añadimos un nuevo valor a ese índice
+						locationNodes.get(formattedStringArea).add("<".concat(formattedStringName).concat(">"));
+					}
+
+					//Añadimos el servidor del nombre del nodo al array declarado al principio y que contendrá ["Nombre del nodo" => "Valor del nodo"] - Ej: ["<Malaga-centro>" => "comun.hopto.org"]
+					nodesDomain.put("<".concat(formattedStringName).concat(">"),formattedStringNode);
+
+
+				}
+
+				//Rellenamos los spinner
+				ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(editAccountActivity,
+						org.malagacomun.enred.R.layout.custom_spinner, items);
+				mSelectLocation.setAdapter(spinnerAdapter);
+				mSelectLocation.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+					@Override
+					public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) { //Al seleccionarse un elemento del spinner superior rellenamos el spinner inferior
+						System.out.println(mSelectLocation.getSelectedItem().toString());
+						ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(editAccountActivity,
+								org.malagacomun.enred.R.layout.custom_spinner, locationNodes.get(mSelectLocation.getSelectedItem().toString()));
+						mSelectServer.setAdapter(spinnerAdapter);
+					}
+
+					@Override
+					public void onNothingSelected(AdapterView<?> parentView) {
+						// your code here
+					}
+
+				});
+
+
+			} catch (Exception e) {
+				System.out.println("EXCEPCION: ".concat(e.toString()));
+			}
+
+			//UNA VEZ VISTO ESTO DEBEREMOS IRNOS AL ONCLICKLISTENER DEL BOTON "Siguiente", es decir, la funcion: "mSaveButtonClickListener" que se encuentra en esta misma clase.
+		}
+	}
+
+
 }

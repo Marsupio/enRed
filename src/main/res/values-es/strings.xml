@@ -176,8 +176,10 @@
   <string name="mgmt_account_delete_confirm_text">Si eliminas tu cuenta tu historial completo de conversaciones se perderá</string>
   <string name="attach_record_voice">Grabar audio</string>
   <string name="account_settings_jabber_id">Nombre de usuario</string>
+  <string name="account_servers">Nodo</string>
+  <string name="account_location">Área</string>
   <string name="account_settings_password">Contraseña</string>
-  <string name="account_settings_example_jabber_id">usuario@comun.hopto.org</string>
+  <string name="account_settings_example_jabber_id">Usuario</string>
   <string name="account_settings_confirm_password">Confirmar contraseña</string>
   <string name="password">Contraseña</string>
   <string name="confirm_password">Confirmar contraseña</string>
@@ -595,7 +597,7 @@
   <string name="security_error_invalid_file_access">Error de seguridad: Acceso a fichero inválido</string>
   <string name="no_application_to_share_uri">No se ha encontrado ninguna aplicación para compartir la URI</string>
   <string name="share_uri_with">Compartir URI con...</string>
-  <string name="welcome_text"><i>en Red</i> es una aplicación de mensajería instantánea (como WhatsApp o Telegram) que pretende dar soporte a grupos locales de economía social y solidaria que usen su propia moneda complementaria. Esta app está en fase de desarrollo, por lo que muchas funcionalidades no están aún implementadas. Si quieres contribuir con tu experiencia de usuario al desarrollo de la app, por favor solicita un nombre de usuario y contraseña a info@malagacomun.org</string>
+  <string name="welcome_text">Esta es una aplicación de mensajería instantánea (como WhatsApp o Telegram) que pretende dar soporte a grupos de economía social y solidaria que usen su propia moneda complementaria. Para iniciar sesión deberás primero solicitar un nombre de usuario y contraseña escribiendo a info@malagacomun.org</string>
   <string name="magic_create_text">Te guiaremos durante el proceso de creación de la cuenta en conversations.im.\nCuando selecciones conversations.im como proveedor, podrás comunicarte con usuarios de otros servidores mediante tu identificador Jabber.</string>
   <string name="your_full_jid_will_be">Tu identificador Jabber será: %s</string>
   <string name="create_account">Crear cuenta</string>
