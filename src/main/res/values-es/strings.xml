@@ -20,7 +20,7 @@
   <string name="title_activity_conference_details">Detalles de Conversación</string>
   <string name="title_activity_contact_details">Detalles del Contacto</string>
   <string name="title_activity_sharewith">Compartir con Conversación</string>
-  <string name="title_activity_start_conversation">Nueva Conversación</string>
+  <string name="title_activity_start_conversation"></string>
   <string name="title_activity_choose_contact">Elegir contacto</string>
   <string name="title_activity_block_list">Lista contactos bloqueados</string>
   <string name="just_now">ahora</string>
@@ -235,7 +235,7 @@
   <string name="done">Hecho</string>
   <string name="verify">Verificar</string>
   <string name="decrypt">Descifrar</string>
-  <string name="conferences">Conversaciones en grupo</string>
+  <string name="conferences">Salas</string>
   <string name="search">Buscar</string>
   <string name="create_contact">Añadir Contacto</string>
   <string name="enter_contact">Introducir contacto</string>
