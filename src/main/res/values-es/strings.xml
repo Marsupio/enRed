@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-  <string name="action_settings">Ajustes</string>
+  <string name="action_settings">Preferencias</string>
   <string name="action_add">Nueva conversación</string>
   <string name="action_accounts">Gestionar cuentas</string>
   <string name="action_end_conversation">Terminar conversación</string>
@@ -16,7 +16,7 @@
   <string name="action_block_domain">Bloquear dominio</string>
   <string name="action_unblock_domain">Desbloquear dominio</string>
   <string name="title_activity_manage_accounts">Gestionar Cuentas</string>
-  <string name="title_activity_settings">Ajustes</string>
+  <string name="title_activity_settings">Preferencias</string>
   <string name="title_activity_conference_details">Detalles de Conversación</string>
   <string name="title_activity_contact_details">Detalles del Contacto</string>
   <string name="title_activity_sharewith">Compartir con Conversación</string>
